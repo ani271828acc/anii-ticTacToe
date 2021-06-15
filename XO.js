@@ -60,7 +60,7 @@ function makeGrid() {
                     disable = true;
                 }
 
-                if((!checkWin())&&complete()) {
+                if(complete()) {
                     alert("It's a draw");
                     disable = true;
                 }
@@ -71,6 +71,14 @@ function makeGrid() {
                 else if(currentPlayer == 1) {
                     currentPlayer = 0;
                 }
+
+                let k = parseInt(currentPlayer);
+                let l = Math.abs(currentPlayer-1);
+                let a = JSON.parse(JSON.stringify(filled));
+                let b = JSON.parse(JSON.stringify(players[0].taken));
+                let c = JSON.parse(JSON.stringify(players[1].taken));
+                console.log(b);
+                console.log(bestMove(a,b,c));
 
                 if(players[currentPlayer].type == "noobBot") {
                     console.log("noob");
@@ -156,18 +164,58 @@ function fillCell(x) {
 
 
 function bestMove(currentBoard,p1,p2) {
-    let best = null;
+    let best = -1;
     let val = -999999999;
     for(let i = 1; i<=9; i++) {
-        if(miniMax(currentBoard,p1,p2,i)>val) {
-            best = val;
+        if(!currentBoard.includes(i)) {
+            console.log(miniMax(currentBoard,p1,p2,i,false));
+            if(miniMax(currentBoard,p1,p2,i,false)>val) {
+                val = miniMax(currentBoard,p1,p2,i,false);
+                best = i;
+            }
         }
     }
+    return best;
 }
 
-function miniMax(board,p1,p2,i) {
-    
+function miniMax(board,p1,p2,i,isCur) {
+    board.push(parseInt(i));
+    p1.push(parseInt(i));
+    if(checkWin(p1)) {
+        return 10;
+    }
+
+    else if(!movesLeft(board)) {
+        return 0;
+    }
+
+    if(isCur) {
+        bestVal = -9999999; 
+        for(let i = 0;i<9;i++) {
+            if(!board.includes(i)) {
+                value = miniMax(board,p1,p2,i,false);
+                if(value > bestVal) {
+                    bestVal = value;
+                }
+            }
+        }
+        return bestVal;
+    }
+
+    else {
+        bestVal = 9999999;
+        for(let i = 0;i<9;i++) {
+            if(!board.includes(i)) {
+                value = miniMax(board,p2,p1,i,true);
+                if(value < bestVal) {
+                    bestVal = value;
+                }
+            }
+        }
+    }
+    return bestVal;
 }
+
 
 function movesLeft(board) {
     if(board.length == 9) {
