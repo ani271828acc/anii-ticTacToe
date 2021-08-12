@@ -9,6 +9,9 @@ let s2;
 let t1;
 let t2;
 
+let huPlayer = "P"
+let aiPlayer = "C"
+
 let players = [
     {
         name : "player1",
@@ -64,6 +67,7 @@ function makeGrid() {
                     alert("It's a draw");
                     disable = true;
                 }
+                let opp = currentPlayer
 
                 if(currentPlayer == 0) {
                     currentPlayer = 1;
@@ -72,13 +76,19 @@ function makeGrid() {
                     currentPlayer = 0;
                 }
 
-                let k = parseInt(currentPlayer);
-                let l = Math.abs(currentPlayer-1);
-                let a = JSON.parse(JSON.stringify(filled));
-                let b = JSON.parse(JSON.stringify(players[0].taken));
-                let c = JSON.parse(JSON.stringify(players[1].taken));
-                console.log(b);
-                console.log(bestMove(a,b,c));
+                // console.log(bestMove(filled,players[0].taken,players[1].taken));
+                let board = [0,1,2,3,4,5,6,7,8]
+                for(let i=0;i<players[currentPlayer].taken.length;i++) {
+                    board[players[currentPlayer].taken[i]-1] = "C"
+                }
+                for(let i=0;i<players[opp].taken.length;i++) {
+                    board[players[opp].taken[i]-1] = "P"
+                }
+
+                console.log(board)
+                
+                console.log(minimax(board, aiPlayer, 0))
+                
 
                 if(players[currentPlayer].type == "noobBot") {
                     console.log("noob");
@@ -128,12 +138,12 @@ function zeroPlayer() {
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function noobBot() {
-    let r = parseInt(Math.random()*9) + 1;
-    while(filled.includes(r)) {
-        r = parseInt(Math.random()*9) + 1;
-    }
-    console.log(r);
-    id(r).click();
+    // let r = parseInt(Math.random()*9) + 1;
+    // while(filled.includes(r)) {
+    //     r = parseInt(Math.random()*9) + 1;
+    // }
+    // console.log(r);
+    // id(r).click();
 }
 
 function godBot() {
@@ -163,58 +173,82 @@ function fillCell(x) {
 }
 
 
-function bestMove(currentBoard,p1,p2) {
-    let best = -1;
-    let val = -999999999;
-    for(let i = 1; i<=9; i++) {
-        if(!currentBoard.includes(i)) {
-            console.log(miniMax(currentBoard,p1,p2,i,false));
-            if(miniMax(currentBoard,p1,p2,i,false)>val) {
-                val = miniMax(currentBoard,p1,p2,i,false);
-                best = i;
-            }
+function minimax(reboard, player, depth) {
+    let array = avail(reboard);
+    if (winning(reboard, huPlayer)) {
+      return {
+        score: -100 + depth
+      };
+    } else if (winning(reboard, aiPlayer)) {
+      return {
+        score: 100 - depth
+      };
+    } else if (array.length === 0) {
+      return {
+        score: 0 - depth
+      };
+    }
+  
+    var moves = [];
+    for (var i = 0; i < array.length; i++) {
+      var move = {};
+      move.index = reboard[array[i]];
+      reboard[array[i]] = player;
+  
+      if (player == aiPlayer) {
+        var g = minimax(reboard, huPlayer, depth+1);
+        move.score = g.score;
+      } else {
+        var g = minimax(reboard, aiPlayer, depth+1);
+        move.score = g.score;
+      }
+      reboard[array[i]] = move.index;
+      moves.push(move);
+    }
+  
+    var bestMove;
+    if (player === aiPlayer) {
+      var bestScore = -10000;
+      for (var i = 0; i < moves.length; i++) {
+        if (moves[i].score > bestScore) {
+          bestScore = moves[i].score;
+          bestMove = i;
         }
-    }
-    return best;
-}
-
-function miniMax(board,p1,p2,i,isCur) {
-    board.push(parseInt(i));
-    p1.push(parseInt(i));
-    if(checkWin(p1)) {
-        return 10;
-    }
-
-    else if(!movesLeft(board)) {
-        return 0;
-    }
-
-    if(isCur) {
-        bestVal = -9999999; 
-        for(let i = 0;i<9;i++) {
-            if(!board.includes(i)) {
-                value = miniMax(board,p1,p2,i,false);
-                if(value > bestVal) {
-                    bestVal = value;
-                }
-            }
+      }
+    } else {
+      var bestScore = 10000;
+      for (var i = 0; i < moves.length; i++) {
+        if (moves[i].score < bestScore) {
+          bestScore = moves[i].score;
+          bestMove = i;
         }
-        return bestVal;
+      }
     }
-
-    else {
-        bestVal = 9999999;
-        for(let i = 0;i<9;i++) {
-            if(!board.includes(i)) {
-                value = miniMax(board,p2,p1,i,true);
-                if(value < bestVal) {
-                    bestVal = value;
-                }
-            }
-        }
+    return moves[bestMove];
+  }
+  
+  //available spots
+  function avail(reboard) {
+    return reboard.filter(s => s != "P" && s != "C");
+  }
+  
+  // winning combinations
+  function winning(board, player) {
+    if (
+      (board[0] == player && board[1] == player && board[2] == player) ||
+      (board[3] == player && board[4] == player && board[5] == player) ||
+      (board[6] == player && board[7] == player && board[8] == player) ||
+      (board[0] == player && board[3] == player && board[6] == player) ||
+      (board[1] == player && board[4] == player && board[7] == player) ||
+      (board[2] == player && board[5] == player && board[8] == player) ||
+      (board[0] == player && board[4] == player && board[8] == player) ||
+      (board[2] == player && board[4] == player && board[6] == player)
+    ) {
+      return true;
+    } else {
+      return false;
     }
-    return bestVal;
-}
+  }
 
 
 function movesLeft(board) {
