@@ -99,6 +99,10 @@ function makeGrid() {
 
 function start() {
     destroy()
+    updateS1();
+    updateS2();
+    updateT1();
+    updateT2();
     if(id("selectT1").value=="human" && id("selectT2").value == "human") {
         console.log("twoplayer")
         twoPlayer()
@@ -175,6 +179,7 @@ function fillCell(x) {
 
 
 function minimax(reboard, player, depth) {
+
     let array = avail(reboard);
     if (winning(reboard, huPlayer)) {
       return {
@@ -316,10 +321,10 @@ function destroy() {
         }
     }
     makeGrid();
-    updateS1();
-    updateS2();
-    updateT1();
-    updateT2();
+    // updateS1();
+    // updateS2();
+    // updateT1();
+    // updateT2();
     players[0].taken = [];
     players[1].taken = [];
     filled = [];
@@ -342,22 +347,27 @@ function qs(query) {
 }
 
 function updateS1() {
+    destroy()
     if(id("selectS1").value && id("selectS1").value!=id("selectS2").value) {
         players[0].symbol = parseInt(id("selectS1").value);
     }
     id("selectS1").value = players[0].symbol;
+    
     console.log(symbols[players[0].symbol]);
 }
 
 function updateS2() {
+    destroy()
     if(id("selectS2").value && id("selectS1").value!=id("selectS2").value) {
         players[1].symbol = parseInt(id("selectS2").value);
     }
     id("selectS2").value = players[1].symbol;
+    
     console.log(symbols[players[1].symbol]);
 }
 
 function updateT1() {
+    destroy()
     if(id("selectT1").value) {
         players[0].type = id("selectT1").value;
     }
@@ -366,6 +376,7 @@ function updateT1() {
 }
 
 function updateT2() {
+    destroy()
     if(id("selectT2").value) {
         players[1].type = id("selectT2").value;
     }
