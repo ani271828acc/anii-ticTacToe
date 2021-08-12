@@ -1,13 +1,14 @@
-let mode;
-let symbols = ['X','O','$','@','#'];
-let filled = [];
-let disable = true;
-let currentPlayer=0;
-let check = 0;
-let s1;
-let s2;
-let t1;
-let t2;
+let mode
+let symbols = ['X','O','$','@','#']
+let positionVals = [3, -1, 5, -1, 6, 0, 4, 0, 5]
+let filled = []
+let disable = true
+let currentPlayer=0
+let check = 0
+let s1
+let s2
+let t1
+let t2
 
 let huPlayer = "P"
 let aiPlayer = "C"
@@ -33,50 +34,47 @@ let players = [
             
         }
     },
-];
-
-console.log(symbols[4]);
+]
 
 window.onload = function () {
-    makeGrid();
-    updateS1();
-    updateS2();
-    updateT1();
-    updateT2();
+    makeGrid()
+    updateS1()
+    updateS2()
+    updateT1()
+    updateT2()
 }
 
 function makeGrid() {
     for(let i=0;i<9;i++) {
         let cell = document.createElement("span");
-        cell.id = i+1;
-        cell.classList.add("cell");
+        cell.id = i+1
+        cell.classList.add("cell")
         cell.addEventListener("click",function () {
             if(!disable) {
-                fillCell(this.id);
+                fillCell(this.id)
                 players[currentPlayer].taken.push(parseInt(this.id));
-                filled.push(parseInt(this.id));
-                console.log(filled);
+                filled.push(parseInt(this.id))
+                console.log(filled)
                 console.log(players[currentPlayer].taken);
                 if(checkWin()) {
                     console.log("player " + (currentPlayer+1) + " wins");
                     alert("player " + (currentPlayer+1) + " wins")
-                    disable = true;
+                    disable = true
                 }
 
-                if(complete()) {
-                    alert("It's a draw");
-                    disable = true;
+                else if(complete()) {
+                    alert("It's a draw")
+                    disable = true
                 }
                 let opp = currentPlayer
 
                 if(currentPlayer == 0) {
-                    currentPlayer = 1;
+                    currentPlayer = 1
                 }
                 else if(currentPlayer == 1) {
-                    currentPlayer = 0;
+                    currentPlayer = 0
                 }
 
-                // console.log(bestMove(filled,players[0].taken,players[1].taken));
                 let board = [0,1,2,3,4,5,6,7,8]
                 for(let i=0;i<players[currentPlayer].taken.length;i++) {
                     board[players[currentPlayer].taken[i]-1] = "C"
@@ -84,70 +82,73 @@ function makeGrid() {
                 for(let i=0;i<players[opp].taken.length;i++) {
                     board[players[opp].taken[i]-1] = "P"
                 }
-
-                console.log(board)
                 
-                console.log(minimax(board, aiPlayer, 0))
-                
+                let bestMove = minimax(board,aiPlayer,0)
 
                 if(players[currentPlayer].type == "noobBot") {
-                    console.log("noob");
-                    noobBot();
+                    noobBot()
+                } else if(players[currentPlayer].type == "godBot") {
+                    let idx = bestMove.index
+                    id(idx+1).click()
                 }
             }
         });
-        id("grid").appendChild(cell);
+        id("grid").appendChild(cell)
     }
 }
 
 function start() {
-    destroy();
+    destroy()
     if(id("selectT1").value=="human" && id("selectT2").value == "human") {
-        console.log("twoplayer");
-        twoPlayer();
+        console.log("twoplayer")
+        twoPlayer()
     }
     else if(id("selectT1").value == "human" || id("selectT2").value == "human") {
-        console.log("oneplayer");
-        onePlayer();
+        console.log("oneplayer")
+        onePlayer()
     }
     else {
-        console.log("zeroplayer");
-        zeroPlayer();
+        console.log("zeroplayer")
+        zeroPlayer()
     }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function twoPlayer() {
-    disable = false;
+    disable = false
 }
 
 function onePlayer() {
-    disable = false;
+    disable = false
     if(players[0].type == "noobBot") {
-        noobBot();
+        noobBot()
+    } else if(players[0].type == "godBot") {
+        godBot()
     }
 }
 
 function zeroPlayer() {
-    console.log("zeroP");
-    disable = false;
-    noobBot();
+    console.log("zeroP")
+    disable = false
+    noobBot()
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function noobBot() {
-    // let r = parseInt(Math.random()*9) + 1;
-    // while(filled.includes(r)) {
-    //     r = parseInt(Math.random()*9) + 1;
-    // }
-    // console.log(r);
-    // id(r).click();
+    let r = parseInt(Math.random()*9) + 1;
+    while(filled.includes(r)) {
+        r = parseInt(Math.random()*9) + 1;
+    }
+    console.log(r);
+    id(r).click();
 }
 
 function godBot() {
-    
+    let moves = [1,3,5,7,9]
+    let move = parseInt(Math.random()*5)
+    id(moves[move]).click()
 }
 
 function fillCell(x) {
@@ -185,7 +186,7 @@ function minimax(reboard, player, depth) {
       };
     } else if (array.length === 0) {
       return {
-        score: 0 - depth
+        score: 0 - player==aiPlayer?depth:- depth
       };
     }
   
@@ -197,10 +198,10 @@ function minimax(reboard, player, depth) {
   
       if (player == aiPlayer) {
         var g = minimax(reboard, huPlayer, depth+1);
-        move.score = g.score;
+        move.score = g.score
       } else {
         var g = minimax(reboard, aiPlayer, depth+1);
-        move.score = g.score;
+        move.score = g.score
       }
       reboard[array[i]] = move.index;
       moves.push(move);
@@ -210,19 +211,25 @@ function minimax(reboard, player, depth) {
     if (player === aiPlayer) {
       var bestScore = -10000;
       for (var i = 0; i < moves.length; i++) {
-        if (moves[i].score > bestScore) {
-          bestScore = moves[i].score;
+        if (moves[i].score + positionVals[moves[i].index]> bestScore) {
+          bestScore = moves[i].score + positionVals[moves[i].index]
           bestMove = i;
         }
       }
     } else {
       var bestScore = 10000;
       for (var i = 0; i < moves.length; i++) {
-        if (moves[i].score < bestScore) {
-          bestScore = moves[i].score;
-          bestMove = i;
+        if (moves[i].score + positionVals[moves[i].index]< bestScore) {
+          bestScore = moves[i].score + positionVals[moves[i].index]
+          bestMove = i
         }
       }
+    }
+    if(bestScore < 0 && bestScore > -10 && reboard[4]==0) {
+        return {
+            index: 4,
+            score: 0
+        }
     }
     return moves[bestMove];
   }
@@ -257,37 +264,6 @@ function movesLeft(board) {
     }
     return true;
 }
-
-function checkWin2(ar) {
-    let win = false;
-    if(ar.includes(1)&&ar.includes(2)&&ar.includes(3)) {
-        win = true;
-    }
-    if(ar.includes(4)&&ar.includes(5)&&ar.includes(6)) {
-        win = true;
-    }
-    if(ar.includes(7)&&ar.includes(8)&&ar.includes(9)) {
-        win = true;
-    }
-    if(ar.includes(1)&&ar.includes(4)&&ar.includes(7)) {
-        win = true;
-    }
-    if(ar.includes(2)&&ar.includes(5)&&ar.includes(8)) {
-        win = true;
-    }
-    if(ar.includes(3)&&ar.includes(6)&&ar.includes(9)) {
-        win = true;
-    }
-    if(ar.includes(1)&&ar.includes(5)&&ar.includes(9)) {
-        win = true;
-    }
-    if(ar.includes(3)&&ar.includes(5)&&ar.includes(7)) {
-        win = true;
-    }
-
-    return win;
-}
-
 
 
 
@@ -437,13 +413,11 @@ function updateT2() {
 ////////////////////////NAVIGATION/////////////////////////////////////////////////////
 function Nav() {
     if(!check) {
-        console.log(check);
         check=1;
         document.getElementById("settings").style.width="350px";
     } 
 
-    else {
-        console.log(check);
+    else {    
         check=0;
         document.getElementById("settings").style.width="0px";
     }
